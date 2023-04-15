@@ -1,10 +1,16 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IdentityModel.Tokens.Jwt;
 using System.Linq;
+using System.Security.Claims;
+using System.Text;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Cors;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
+using Newtonsoft.Json;
 using Totem_API.Data;
 using Totem_API.Models;
 
@@ -15,10 +21,40 @@ namespace Totem_API.Controllers
     public class UsuariosController : ControllerBase
     {
         private readonly TotemContext _context;
+        private readonly string key;
 
-        public UsuariosController(TotemContext context)
+        public UsuariosController(TotemContext context, IConfiguration config)
         {
             _context = context;
+            key = config.GetSection("JWTsetting").GetSection("securitykey").ToString();
+        }
+
+        //POST: api/Autentificacion
+        [Route("Authenticate")]
+        [HttpPost]
+        public IActionResult Autentificacion([FromBody] Auth user)
+        {
+            var userLogin = _context.Usuarios.FirstOrDefault(usr => usr.Email == user.Email && usr.Pass == user.Pass);
+            if (userLogin == null)
+                //return Unauthorized();
+                return StatusCode(StatusCodes.Status401Unauthorized, new { token = "" });
+            var tokenhandler = new JwtSecurityTokenHandler();
+            var tokenkey = Encoding.ASCII.GetBytes(key);
+            var tokenDescriptor = new SecurityTokenDescriptor
+            {
+                Subject = new ClaimsIdentity(
+                    new Claim[]
+                    {
+                        new Claim(ClaimTypes.Email, userLogin.Email),
+                    }
+                    ),
+                Expires = DateTime.UtcNow.AddMinutes(5),
+                SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(tokenkey), SecurityAlgorithms.HmacSha256)
+            };
+            var token = tokenhandler.CreateToken(tokenDescriptor);
+            string finaltoken = tokenhandler.WriteToken(token);
+            //return Ok();
+            return StatusCode(StatusCodes.Status200OK, new { token = finaltoken });
         }
 
         // GET: api/Usuarios
