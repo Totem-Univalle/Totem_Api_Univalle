@@ -5,6 +5,7 @@ using System.Linq;
 using System.Security.Claims;
 using System.Text;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Cors;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -26,7 +27,7 @@ namespace Totem_API.Controllers
         public UsuariosController(TotemContext context, IConfiguration config)
         {
             _context = context;
-            key = config.GetSection("JWTsetting").GetSection("securitykey").ToString();
+            key = config.GetSection("JWT:Key").Value.ToString();
         }
 
         //POST: api/Autentificacion
@@ -36,28 +37,29 @@ namespace Totem_API.Controllers
         {
             var userLogin = _context.Usuarios.FirstOrDefault(usr => usr.Email == user.Email && usr.Pass == user.Pass);
             if (userLogin == null)
-                //return Unauthorized();
                 return StatusCode(StatusCodes.Status401Unauthorized, new { token = "" });
-            var tokenhandler = new JwtSecurityTokenHandler();
-            var tokenkey = Encoding.ASCII.GetBytes(key);
-            var tokenDescriptor = new SecurityTokenDescriptor
+
+            var claims = new[]
             {
-                Subject = new ClaimsIdentity(
-                    new Claim[]
-                    {
-                        new Claim(ClaimTypes.Email, userLogin.Email),
-                    }
-                    ),
-                Expires = DateTime.UtcNow.AddMinutes(5),
-                SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(tokenkey), SecurityAlgorithms.HmacSha256)
+                new Claim(ClaimTypes.Name, user.Email)
             };
-            var token = tokenhandler.CreateToken(tokenDescriptor);
-            string finaltoken = tokenhandler.WriteToken(token);
-            //return Ok();
-            return StatusCode(StatusCodes.Status200OK, new { token = finaltoken });
+
+            var keyT = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(key));
+            var creds = new SigningCredentials(keyT, SecurityAlgorithms.HmacSha256);
+
+            var securityToken = new JwtSecurityToken(
+                claims: claims,
+                expires: DateTime.Now.AddMinutes(60),
+                signingCredentials: creds);
+
+            string token = new JwtSecurityTokenHandler().WriteToken(securityToken);
+
+            return StatusCode(StatusCodes.Status200OK, new { token, user = userLogin });
+
         }
 
         // GET: api/Usuarios
+        [Authorize]
         [HttpGet]
         public async Task<ActionResult<IEnumerable<Usuario>>> GetUsuarios()
         {
@@ -69,6 +71,7 @@ namespace Totem_API.Controllers
         }
 
         // GET: api/Usuarios/5
+        [Authorize]
         [HttpGet("{id}")]
         public async Task<ActionResult<Usuario>> GetUsuario(int id)
         {
@@ -88,6 +91,7 @@ namespace Totem_API.Controllers
 
         // PUT: api/Usuarios/5
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
+        [Authorize]
         [HttpPut("{id}")]
         public async Task<IActionResult> PutUsuario(int id, Usuario usuario)
         {
@@ -119,6 +123,7 @@ namespace Totem_API.Controllers
 
         // POST: api/Usuarios
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
+        [Authorize]
         [HttpPost]
         public async Task<ActionResult<Usuario>> PostUsuario(Usuario usuario)
         {
@@ -133,6 +138,7 @@ namespace Totem_API.Controllers
         }
 
         // DELETE: api/Usuarios/5
+        [Authorize]
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteUsuario(int id)
         {

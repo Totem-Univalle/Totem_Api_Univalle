@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -11,6 +12,7 @@ using Totem_API.Models;
 namespace Totem_API.Controllers
 {
     [Route("api/[controller]")]
+    [Authorize]
     [ApiController]
     public class TotemsController : ControllerBase
     {
@@ -21,7 +23,27 @@ namespace Totem_API.Controllers
             _context = context;
         }
 
+        //GET: api/TotemU/5
+        //[Route("TotemU/")]
+        //[HttpGet("{id}")]
+        //public async Task<ActionResult<IEnumerable<Totem>>> GetTotemUsuario(int id)
+        //{
+        //    if (_context.Totems == null)
+        //    {
+        //        return NotFound();
+        //    }
+        //    var totem = await _context.Totems.Where(u => u.IdUsuario == id).ToListAsync();
+
+        //    if (totem == null)
+        //    {
+        //        return NotFound();
+        //    }
+
+        //    return totem;
+        //}
+
         // GET: api/Totems
+        //[Authorize]
         [HttpGet]
         public async Task<ActionResult<IEnumerable<Totem>>> GetTotems()
         {
@@ -33,6 +55,7 @@ namespace Totem_API.Controllers
         }
 
         // GET: api/Totems/5
+
         [HttpGet("{id}")]
         public async Task<ActionResult<Totem>> GetTotem(int id)
         {
