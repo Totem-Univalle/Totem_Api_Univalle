@@ -31,10 +31,10 @@ namespace Totem_API.Controllers
         [HttpGet]
         public async Task<ActionResult<IEnumerable<Locacion>>> GetLocacions()
         {
-            if (_context.Locacions == null)
-            {
-                return NotFound();
-            }
+          if (_context.Locacions == null)
+          {
+              return NotFound();
+          }
             return await _context.Locacions.ToListAsync();
         }
 
@@ -42,10 +42,10 @@ namespace Totem_API.Controllers
         [HttpGet("{id}")]
         public async Task<ActionResult<Locacion>> GetLocacion(int id)
         {
-            if (_context.Locacions == null)
-            {
-                return NotFound();
-            }
+          if (_context.Locacions == null)
+          {
+              return NotFound();
+          }
             var locacion = await _context.Locacions.FindAsync(id);
 
             if (locacion == null)
@@ -56,7 +56,7 @@ namespace Totem_API.Controllers
             return locacion;
         }
 
-
+     
 
         [HttpPut("{id}")]
         public async Task<IActionResult> PutLocacion(int id, [FromForm] LocacionUploadModel LocacionInput)
@@ -71,7 +71,7 @@ namespace Totem_API.Controllers
             // Actualizar los campos del publicidad con los datos del modelo
             locacion.Nombre = LocacionInput.Nombre;
             locacion.Descripcion = LocacionInput.Descripcion;
-            locacion.Keywords = string.Join(",", LocacionInput.Keywords);
+            locacion.Keywords = string.Join(",", LocacionInput.Keywords); 
             locacion.IdTotem = LocacionInput.IdTotem;
             // Upload new carousel images to Blob Storage, if any
             if (LocacionInput.ImagenesCarrucel != null)

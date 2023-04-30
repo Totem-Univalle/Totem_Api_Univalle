@@ -1,4 +1,4 @@
-﻿namespace Totem_API.Models
+namespace Totem_API.Models
 {
     public class LocacionUploadModel
     {

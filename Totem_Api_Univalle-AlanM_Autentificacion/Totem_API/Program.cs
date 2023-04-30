@@ -57,8 +57,6 @@ if (app.Environment.IsDevelopment())
     app.UseSwagger();
     app.UseSwaggerUI();
 }
-app.UseCors();
-
 app.UseCors("NuevaPolitica");
 app.UseRouting();
 
