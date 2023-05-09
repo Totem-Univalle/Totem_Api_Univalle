@@ -24,6 +24,7 @@ namespace Totem_API.Controllers
         }
 
         // GET: api/Publicidad
+        [Authorize]
         [HttpGet]
         public async Task<ActionResult<IEnumerable<Publicidad>>> GetPublicidads()
         {
@@ -35,6 +36,7 @@ namespace Totem_API.Controllers
         }
 
         // GET: api/Publicidad/5
+        [Authorize]
         [HttpGet("{id}")]
         public async Task<ActionResult<Publicidad>> GetPublicidad(int id)
         {
@@ -54,6 +56,7 @@ namespace Totem_API.Controllers
 
         // PUT: api/Publicidad/5
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
+        [Authorize]
         [HttpPut("{id}")]
         public async Task<IActionResult> PutPublicidad(int id, Publicidad publicidad)
         {
@@ -85,6 +88,7 @@ namespace Totem_API.Controllers
 
         // POST: api/Publicidad
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
+        [Authorize]
         [HttpPost]
         public async Task<ActionResult<Publicidad>> PostPublicidad(Publicidad publicidad)
         {
@@ -99,6 +103,7 @@ namespace Totem_API.Controllers
         }
 
         // DELETE: api/Publicidad/5
+        [Authorize]
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeletePublicidad(int id)
         {

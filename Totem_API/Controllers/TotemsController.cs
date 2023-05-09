@@ -23,27 +23,7 @@ namespace Totem_API.Controllers
             _context = context;
         }
 
-        //GET: api/TotemU/5
-        //[Route("TotemU/")]
-        //[HttpGet("{id}")]
-        //public async Task<ActionResult<IEnumerable<Totem>>> GetTotemUsuario(int id)
-        //{
-        //    if (_context.Totems == null)
-        //    {
-        //        return NotFound();
-        //    }
-        //    var totem = await _context.Totems.Where(u => u.IdUsuario == id).ToListAsync();
-
-        //    if (totem == null)
-        //    {
-        //        return NotFound();
-        //    }
-
-        //    return totem;
-        //}
-
-        // GET: api/Totems
-        //[Authorize]
+        [Authorize]
         [HttpGet]
         public async Task<ActionResult<IEnumerable<Totem>>> GetTotems()
         {
@@ -55,7 +35,7 @@ namespace Totem_API.Controllers
         }
 
         // GET: api/Totems/5
-
+        [Authorize]
         [HttpGet("{id}")]
         public async Task<ActionResult<Totem>> GetTotem(int id)
         {
@@ -75,6 +55,7 @@ namespace Totem_API.Controllers
 
         // PUT: api/Totems/5
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
+        [Authorize]
         [HttpPut("{id}")]
         public async Task<IActionResult> PutTotem(int id, Totem totem)
         {
@@ -106,6 +87,7 @@ namespace Totem_API.Controllers
 
         // POST: api/Totems
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
+        [Authorize]
         [HttpPost]
         public async Task<ActionResult<Totem>> PostTotem(Totem totem)
         {
@@ -120,6 +102,7 @@ namespace Totem_API.Controllers
         }
 
         // DELETE: api/Totems/5
+        [Authorize]
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteTotem(int id)
         {

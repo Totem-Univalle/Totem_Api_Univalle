@@ -24,6 +24,7 @@ namespace Totem_API.Controllers
         }
 
         // GET: api/Locaciones
+        [Authorize]
         [HttpGet]
         public async Task<ActionResult<IEnumerable<Locacion>>> GetLocacions()
         {
@@ -35,6 +36,7 @@ namespace Totem_API.Controllers
         }
 
         // GET: api/Locaciones/5
+        [Authorize]
         [HttpGet("{id}")]
         public async Task<ActionResult<Locacion>> GetLocacion(int id)
         {
@@ -54,6 +56,7 @@ namespace Totem_API.Controllers
 
         // PUT: api/Locaciones/5
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
+        [Authorize]
         [HttpPut("{id}")]
         public async Task<IActionResult> PutLocacion(int id, Locacion locacion)
         {
@@ -85,6 +88,7 @@ namespace Totem_API.Controllers
 
         // POST: api/Locaciones
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
+        [Authorize]
         [HttpPost]
         public async Task<ActionResult<Locacion>> PostLocacion(Locacion locacion)
         {
@@ -99,6 +103,7 @@ namespace Totem_API.Controllers
         }
 
         // DELETE: api/Locaciones/5
+        [Authorize]
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteLocacion(int id)
         {
