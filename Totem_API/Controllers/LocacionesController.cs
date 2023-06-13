@@ -12,36 +12,40 @@ using Totem_API.Models;
 namespace Totem_API.Controllers
 {
     [Route("api/[controller]")]
-    [Authorize]
+    //[Authorize]
     [ApiController]
     public class LocacionesController : ControllerBase
     {
+        private readonly IConfiguration _configuration;
         private readonly TotemContext _context;
 
-        public LocacionesController(TotemContext context)
+        public LocacionesController(IConfiguration configuration, TotemContext context)
         {
+            _configuration = configuration;
             _context = context;
         }
 
         // GET: api/Locaciones
+        //[Authorize]
         [HttpGet]
         public async Task<ActionResult<IEnumerable<Locacion>>> GetLocacions()
         {
-          if (_context.Locacions == null)
-          {
-              return NotFound();
-          }
+            if (_context.Locacions == null)
+            {
+                return NotFound();
+            }
             return await _context.Locacions.ToListAsync();
         }
 
         // GET: api/Locaciones/5
+        //[Authorize]
         [HttpGet("{id}")]
         public async Task<ActionResult<Locacion>> GetLocacion(int id)
         {
-          if (_context.Locacions == null)
-          {
-              return NotFound();
-          }
+            if (_context.Locacions == null)
+            {
+                return NotFound();
+            }
             var locacion = await _context.Locacions.FindAsync(id);
 
             if (locacion == null)
@@ -52,46 +56,140 @@ namespace Totem_API.Controllers
             return locacion;
         }
 
-        // PUT: api/Locaciones/5
-        // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
+
+        //[Authorize]
         [HttpPut("{id}")]
-        public async Task<IActionResult> PutLocacion(int id, Locacion locacion)
+        public async Task<IActionResult> PutLocacion(int id, [FromForm] LocacionUploadModel LocacionInput)
         {
-            if (id != locacion.IdLocacion)
+            var locacion = await _context.Locacions.FindAsync(id);
+
+            if (locacion == null)
             {
-                return BadRequest();
+                return NotFound();
             }
 
-            _context.Entry(locacion).State = EntityState.Modified;
+            // Actualizar los campos del publicidad con los datos del modelo
+            locacion.Nombre = LocacionInput.Nombre;
+            locacion.Descripcion = LocacionInput.Descripcion;
+            locacion.Keywords = string.Join(",", LocacionInput.Keywords);
+            locacion.IdTotem = LocacionInput.IdTotem;
+            // Upload new carousel images to Blob Storage, if any
+            if (LocacionInput.ImagenesCarrucel != null)
+            {
+                // Delete the old carousel images from Blob Storage
+                if (!string.IsNullOrEmpty(locacion.UrlCarruselImagenes))
+                {
+                    var blobServiceClient1 = CloudStorageAccount.Parse(_configuration.GetConnectionString("AzureBlobStorage")).CreateCloudBlobClient();
+                    var container1 = blobServiceClient1.GetContainerReference("contenedortotem");
+                    var blob1 = container1.GetBlockBlobReference(Path.GetFileName(locacion.UrlCarruselImagenes));
+                    await blob1.DeleteIfExistsAsync();
+                }
 
-            try
-            {
-                await _context.SaveChangesAsync();
-            }
-            catch (DbUpdateConcurrencyException)
-            {
-                if (!LocacionExists(id))
+                // Upload the new carousel images to Blob Storage
+                var connectionString = _configuration.GetConnectionString("AzureBlobStorage");
+                var blobContainerName = "contenedortotem";
+                var blobServiceClient = CloudStorageAccount.Parse(connectionString).CreateCloudBlobClient();
+                var container = blobServiceClient.GetContainerReference(blobContainerName);
+                await container.CreateIfNotExistsAsync();
+
+                var urls = new List<string>();
+                foreach (var imagen in LocacionInput.ImagenesCarrucel)
                 {
-                    return NotFound();
+                    var blobName = Guid.NewGuid().ToString() + Path.GetExtension(imagen.FileName);
+                    var blob = container.GetBlockBlobReference(blobName);
+                    await blob.UploadFromStreamAsync(imagen.OpenReadStream());
+                    urls.Add(blob.Uri.ToString());
                 }
-                else
-                {
-                    throw;
-                }
+
+                locacion.UrlCarruselImagenes = string.Join(',', urls);
             }
+
+            // Upload new map image to Blob Storage, if any
+            if (LocacionInput.ImagenMapa != null)
+            {
+                // Delete the old map image from Blob Storage
+                if (!string.IsNullOrEmpty(locacion.UrlMapa))
+                {
+                    var blobServiceClient2 = CloudStorageAccount.Parse(_configuration.GetConnectionString("AzureBlobStorage")).CreateCloudBlobClient();
+                    var container2 = blobServiceClient2.GetContainerReference("contenedortotem");
+                    var blob2 = container2.GetBlockBlobReference(Path.GetFileName(locacion.UrlMapa));
+                    await blob2.DeleteIfExistsAsync();
+                }
+
+                // Upload the new map image to Blob Storage
+                var connectionString = _configuration.GetConnectionString("AzureBlobStorage");
+                var blobContainerName = "contenedortotem";
+                var blobServiceClient = CloudStorageAccount.Parse(connectionString).CreateCloudBlobClient();
+                var container = blobServiceClient.GetContainerReference(blobContainerName);
+                await container.CreateIfNotExistsAsync();
+                var blobName = Guid.NewGuid().ToString() + Path.GetExtension(LocacionInput.ImagenMapa.FileName);
+                var blob = container.GetBlockBlobReference(blobName);
+                await blob.UploadFromStreamAsync(LocacionInput.ImagenMapa.OpenReadStream());
+                locacion.UrlMapa = blob.Uri.ToString();
+            }
+
+            // Save changes to database
+            await _context.SaveChangesAsync();
 
             return NoContent();
         }
 
-        // POST: api/Locaciones
-        // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
+
+        //[Authorize]
         [HttpPost]
-        public async Task<ActionResult<Locacion>> PostLocacion(Locacion locacion)
+        public async Task<ActionResult<Locacion>> PostLocacion([FromForm] LocacionUploadModel inputModel)
         {
-          if (_context.Locacions == null)
-          {
-              return Problem("Entity set 'TotemContext.Locacions'  is null.");
-          }
+            if (inputModel == null || inputModel.Nombre == null || inputModel.Descripcion == null || inputModel.Keywords == null || inputModel.ImagenesCarrucel == null || inputModel.ImagenMapa == null || inputModel.IdTotem == null)
+            {
+                return BadRequest("Invalid request");
+            }
+
+            var connectionString = _configuration.GetConnectionString("AzureBlobStorage");
+
+            if (connectionString == null)
+            {
+                return StatusCode(StatusCodes.Status500InternalServerError, "AzureBlobStorage connection string is missing");
+            }
+
+            // Upload image to Blob Storage
+            var blobName = Guid.NewGuid().ToString() + Path.GetExtension(inputModel.ImagenMapa.FileName);
+            var blobContainerName = "contenedortotem";
+            var blobServiceClient = CloudStorageAccount.Parse(connectionString).CreateCloudBlobClient();
+            var container = blobServiceClient.GetContainerReference(blobContainerName);
+            await container.CreateIfNotExistsAsync();
+            var blob = container.GetBlockBlobReference(blobName);
+            await blob.UploadFromStreamAsync(inputModel.ImagenMapa.OpenReadStream());
+
+            // Upload image to Blob Storage
+            var urlsCarruselImagenes = new List<string>();
+            foreach (var imagen in inputModel.ImagenesCarrucel)
+            {
+                var blobName2 = Guid.NewGuid().ToString() + Path.GetExtension(imagen.FileName);
+                var blobContainerName2 = "contenedortotem";
+                var blobServiceClient2 = CloudStorageAccount.Parse(connectionString).CreateCloudBlobClient();
+                var container2 = blobServiceClient2.GetContainerReference(blobContainerName2);
+                await container2.CreateIfNotExistsAsync();
+                var blob2 = container2.GetBlockBlobReference(blobName2);
+                await blob2.UploadFromStreamAsync(imagen.OpenReadStream());
+                urlsCarruselImagenes.Add(blob2.Uri.ToString());
+            }
+
+            // Save data to database
+            var locacion = new Locacion
+            {
+                Nombre = inputModel.Nombre,
+                Descripcion = inputModel.Descripcion,
+                Keywords = string.Join(",", inputModel.Keywords),
+                UrlCarruselImagenes = string.Join("|", urlsCarruselImagenes), // Merge URLs of carousel images into a single string with '|' delimiter
+                UrlMapa = blob.Uri.ToString(),
+                IdTotem = inputModel.IdTotem
+            };
+
+            if (_context.Totems == null)
+            {
+                return Problem("Entity set 'TotemContext.Totems' is null.");
+            }
+
             _context.Locacions.Add(locacion);
             await _context.SaveChangesAsync();
 
@@ -99,17 +197,36 @@ namespace Totem_API.Controllers
         }
 
         // DELETE: api/Locaciones/5
+        //[Authorize]
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteLocacion(int id)
         {
-            if (_context.Locacions == null)
-            {
-                return NotFound();
-            }
             var locacion = await _context.Locacions.FindAsync(id);
             if (locacion == null)
             {
                 return NotFound();
+            }
+
+            // Eliminar las imágenes del carrusel de Azure Blob Storage
+            var connectionString = _configuration.GetConnectionString("AzureBlobStorage");
+            var containerName = "contenedortotem";
+            var blobServiceClient = CloudStorageAccount.Parse(connectionString).CreateCloudBlobClient();
+            var containerClient = blobServiceClient.GetContainerReference(containerName);
+
+            var urlsCarruselImagenes = locacion.UrlCarruselImagenes.Split('|');
+            foreach (var urlImagen in urlsCarruselImagenes)
+            {
+                var blobName = Path.GetFileName(urlImagen);
+                var blobClient = containerClient.GetBlockBlobReference(blobName);
+                await blobClient.DeleteIfExistsAsync();
+            }
+
+            // Eliminar la imagen principal de Azure Blob Storage
+            if (!string.IsNullOrEmpty(locacion.UrlMapa))
+            {
+                var blobName = Path.GetFileName(locacion.UrlMapa);
+                var blobClient = containerClient.GetBlockBlobReference(blobName);
+                await blobClient.DeleteIfExistsAsync();
             }
 
             _context.Locacions.Remove(locacion);
@@ -117,6 +234,7 @@ namespace Totem_API.Controllers
 
             return NoContent();
         }
+
 
         private bool LocacionExists(int id)
         {

@@ -1,27 +1,34 @@
 {
   "format": 1,
   "restore": {
-    "D:\\Semestre 5\\System Project II\\Totem_Api_Univalle\\Totem_API\\Totem_API.csproj": {}
+    "C:\\Users\\Asus\\Downloads\\API Repositorio\\Totem_Api_Univalle\\Totem_API\\Totem_API.csproj": {}
   },
   "projects": {
-    "D:\\Semestre 5\\System Project II\\Totem_Api_Univalle\\Totem_API\\Totem_API.csproj": {
+    "C:\\Users\\Asus\\Downloads\\API Repositorio\\Totem_Api_Univalle\\Totem_API\\Totem_API.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "D:\\Semestre 5\\System Project II\\Totem_Api_Univalle\\Totem_API\\Totem_API.csproj",
+        "projectUniqueName": "C:\\Users\\Asus\\Downloads\\API Repositorio\\Totem_Api_Univalle\\Totem_API\\Totem_API.csproj",
         "projectName": "Totem_API",
-        "projectPath": "D:\\Semestre 5\\System Project II\\Totem_Api_Univalle\\Totem_API\\Totem_API.csproj",
-        "packagesPath": "C:\\Users\\alanm\\.nuget\\packages\\",
-        "outputPath": "D:\\Semestre 5\\System Project II\\Totem_Api_Univalle\\Totem_API\\obj\\",
+        "projectPath": "C:\\Users\\Asus\\Downloads\\API Repositorio\\Totem_Api_Univalle\\Totem_API\\Totem_API.csproj",
+        "packagesPath": "C:\\Users\\Asus\\.nuget\\packages\\",
+        "outputPath": "C:\\Users\\Asus\\Downloads\\API Repositorio\\Totem_Api_Univalle\\Totem_API\\obj\\",
         "projectStyle": "PackageReference",
+        "fallbackFolders": [
+          "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages",
+          "C:\\Program Files (x86)\\Microsoft\\Xamarin\\NuGet\\"
+        ],
         "configFilePaths": [
-          "C:\\Users\\alanm\\AppData\\Roaming\\NuGet\\NuGet.Config",
-          "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
+          "C:\\Users\\Asus\\AppData\\Roaming\\NuGet\\NuGet.Config",
+          "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.FallbackLocation.config",
+          "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config",
+          "C:\\Program Files (x86)\\NuGet\\Config\\Xamarin.Offline.config"
         ],
         "originalTargetFrameworks": [
           "net6.0"
         ],
         "sources": {
           "C:\\Program Files (x86)\\Microsoft SDKs\\NuGetPackages\\": {},
+          "C:\\Program Files\\dotnet\\library-packs": {},
           "https://api.nuget.org/v3/index.json": {}
         },
         "frameworks": {
@@ -40,6 +47,10 @@
         "net6.0": {
           "targetAlias": "net6.0",
           "dependencies": {
+            "Azure.Storage.Blobs": {
+              "target": "Package",
+              "version": "[12.16.0, )"
+            },
             "Microsoft.AspNetCore.Authentication.JwtBearer": {
               "target": "Package",
               "version": "[6.0.16, )"
@@ -69,6 +80,10 @@
             "Swashbuckle.AspNetCore.Swagger": {
               "target": "Package",
               "version": "[6.5.0, )"
+            },
+            "WindowsAzure.Storage": {
+              "target": "Package",
+              "version": "[9.3.3, )"
             }
           },
           "imports": [
@@ -90,7 +105,7 @@
               "privateAssets": "all"
             }
           },
-          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\7.0.202\\RuntimeIdentifierGraph.json"
+          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\6.0.400\\RuntimeIdentifierGraph.json"
         }
       }
     }

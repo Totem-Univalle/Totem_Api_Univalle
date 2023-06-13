@@ -28,6 +28,16 @@ builder.Services.AddCors(options =>
     });
 });
 
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("NuevaPolitica", app =>
+    {
+        app.AllowAnyOrigin()
+        .AllowAnyHeader()
+        .AllowAnyMethod();
+    });
+});
+
 //Authentication
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme).AddJwtBearer(options =>
 {
@@ -51,6 +61,9 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 app.UseCors();
+//Nico
+app.UseCors("NuevaPolitica");
+app.UseRouting();
 
 app.UseHttpsRedirection();
 //Auth
@@ -61,3 +74,4 @@ app.UseAuthorization();
 app.MapControllers();
 
 app.Run();
+
