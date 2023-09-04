@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
@@ -76,29 +77,23 @@ namespace Totem_API.Controllers
             // Upload new carousel images to Blob Storage, if any
             if (LocacionInput.ImagenesCarrucel != null)
             {
-                // Delete the old carousel images from Blob Storage
-                if (!string.IsNullOrEmpty(locacion.UrlCarruselImagenes))
-                {
-                    var blobServiceClient1 = CloudStorageAccount.Parse(_configuration.GetConnectionString("AzureBlobStorage")).CreateCloudBlobClient();
-                    var container1 = blobServiceClient1.GetContainerReference("contenedortotem");
-                    var blob1 = container1.GetBlockBlobReference(Path.GetFileName(locacion.UrlCarruselImagenes));
-                    await blob1.DeleteIfExistsAsync();
-                }
 
                 // Upload the new carousel images to Blob Storage
-                var connectionString = _configuration.GetConnectionString("AzureBlobStorage");
-                var blobContainerName = "contenedortotem";
-                var blobServiceClient = CloudStorageAccount.Parse(connectionString).CreateCloudBlobClient();
-                var container = blobServiceClient.GetContainerReference(blobContainerName);
-                await container.CreateIfNotExistsAsync();
+                //var connectionString = _configuration.GetConnectionString("AzureBlobStorage");
+                //var blobContainerName = "contenedortotem";
+                //var blobServiceClient = CloudStorageAccount.Parse(connectionString).CreateCloudBlobClient();
+                //var container = blobServiceClient.GetContainerReference(blobContainerName);
+                //await container.CreateIfNotExistsAsync();
 
                 var urls = new List<string>();
-                foreach (var imagen in LocacionInput.ImagenesCarrucel)
+                foreach (var imagen in LocacionInput.ImagenesCarrucel) // AQUI HACER CONVERSION DE IMAGEN A BASE64
                 {
-                    var blobName = Guid.NewGuid().ToString() + Path.GetExtension(imagen.FileName);
-                    var blob = container.GetBlockBlobReference(blobName);
-                    await blob.UploadFromStreamAsync(imagen.OpenReadStream());
-                    urls.Add(blob.Uri.ToString());
+                    //var blobName = Guid.NewGuid().ToString() + Path.GetExtension(imagen.FileName);
+                    //var blob = container.GetBlockBlobReference(blobName);
+                    //await blob.UploadFromStreamAsync(imagen.OpenReadStream());
+
+                    string imageBase64 = ImageConversion.ConvertToBase64(imagen,10);
+                    urls.Add(imageBase64);
                 }
 
                 locacion.UrlCarruselImagenes = string.Join(',', urls);
@@ -107,25 +102,26 @@ namespace Totem_API.Controllers
             // Upload new map image to Blob Storage, if any
             if (LocacionInput.ImagenMapa != null)
             {
-                // Delete the old map image from Blob Storage
-                if (!string.IsNullOrEmpty(locacion.UrlMapa))
-                {
-                    var blobServiceClient2 = CloudStorageAccount.Parse(_configuration.GetConnectionString("AzureBlobStorage")).CreateCloudBlobClient();
-                    var container2 = blobServiceClient2.GetContainerReference("contenedortotem");
-                    var blob2 = container2.GetBlockBlobReference(Path.GetFileName(locacion.UrlMapa));
-                    await blob2.DeleteIfExistsAsync();
-                }
-
+                //// Delete the old map image from Blob Storage
+                //if (!string.IsNullOrEmpty(locacion.UrlMapa))
+                //{
+                //    var blobServiceClient2 = CloudStorageAccount.Parse(_configuration.GetConnectionString("AzureBlobStorage")).CreateCloudBlobClient();
+                //    var container2 = blobServiceClient2.GetContainerReference("contenedortotem");
+                //    var blob2 = container2.GetBlockBlobReference(Path.GetFileName(locacion.UrlMapa));
+                //    await blob2.DeleteIfExistsAsync();
+                //}
+                //AQUI COLOCAR LA IMAGEN DEL MAPA EN BINARIO
                 // Upload the new map image to Blob Storage
-                var connectionString = _configuration.GetConnectionString("AzureBlobStorage");
-                var blobContainerName = "contenedortotem";
-                var blobServiceClient = CloudStorageAccount.Parse(connectionString).CreateCloudBlobClient();
-                var container = blobServiceClient.GetContainerReference(blobContainerName);
-                await container.CreateIfNotExistsAsync();
-                var blobName = Guid.NewGuid().ToString() + Path.GetExtension(LocacionInput.ImagenMapa.FileName);
-                var blob = container.GetBlockBlobReference(blobName);
-                await blob.UploadFromStreamAsync(LocacionInput.ImagenMapa.OpenReadStream());
-                locacion.UrlMapa = blob.Uri.ToString();
+                //var connectionString = _configuration.GetConnectionString("AzureBlobStorage");
+                //var blobContainerName = "contenedortotem";
+                //var blobServiceClient = CloudStorageAccount.Parse(connectionString).CreateCloudBlobClient();
+                //var container = blobServiceClient.GetContainerReference(blobContainerName);
+                //await container.CreateIfNotExistsAsync();
+                //var blobName = Guid.NewGuid().ToString() + Path.GetExtension(LocacionInput.ImagenMapa.FileName);
+                //var blob = container.GetBlockBlobReference(blobName);
+                //await blob.UploadFromStreamAsync(LocacionInput.ImagenMapa.OpenReadStream());
+                string imageBase64 = ImageConversion.ConvertToBase64(LocacionInput.ImagenMapa, 10);
+                locacion.UrlMapa = imageBase64;
             }
 
             // Save changes to database
@@ -151,27 +147,29 @@ namespace Totem_API.Controllers
                 return StatusCode(StatusCodes.Status500InternalServerError, "AzureBlobStorage connection string is missing");
             }
 
-            // Upload image to Blob Storage
-            var blobName = Guid.NewGuid().ToString() + Path.GetExtension(inputModel.ImagenMapa.FileName);
-            var blobContainerName = "contenedortotem";
-            var blobServiceClient = CloudStorageAccount.Parse(connectionString).CreateCloudBlobClient();
-            var container = blobServiceClient.GetContainerReference(blobContainerName);
-            await container.CreateIfNotExistsAsync();
-            var blob = container.GetBlockBlobReference(blobName);
-            await blob.UploadFromStreamAsync(inputModel.ImagenMapa.OpenReadStream());
+            // Upload image to Blob Storage IMAGEN MAPA
+            string urlMapa = ImageConversion.ConvertToBase64(inputModel.ImagenMapa,10);
+            //var blobName = Guid.NewGuid().ToString() + Path.GetExtension(inputModel.ImagenMapa.FileName);
+            //var blobContainerName = "contenedortotem";
+            //var blobServiceClient = CloudStorageAccount.Parse(connectionString).CreateCloudBlobClient();
+            //var container = blobServiceClient.GetContainerReference(blobContainerName);
+            //await container.CreateIfNotExistsAsync();
+            //var blob = container.GetBlockBlobReference(blobName);
+            //await blob.UploadFromStreamAsync(inputModel.ImagenMapa.OpenReadStream());
 
             // Upload image to Blob Storage
             var urlsCarruselImagenes = new List<string>();
             foreach (var imagen in inputModel.ImagenesCarrucel)
             {
-                var blobName2 = Guid.NewGuid().ToString() + Path.GetExtension(imagen.FileName);
-                var blobContainerName2 = "contenedortotem";
-                var blobServiceClient2 = CloudStorageAccount.Parse(connectionString).CreateCloudBlobClient();
-                var container2 = blobServiceClient2.GetContainerReference(blobContainerName2);
-                await container2.CreateIfNotExistsAsync();
-                var blob2 = container2.GetBlockBlobReference(blobName2);
-                await blob2.UploadFromStreamAsync(imagen.OpenReadStream());
-                urlsCarruselImagenes.Add(blob2.Uri.ToString());
+                //var blobName2 = Guid.NewGuid().ToString() + Path.GetExtension(imagen.FileName);
+                //var blobContainerName2 = "contenedortotem";
+                //var blobServiceClient2 = CloudStorageAccount.Parse(connectionString).CreateCloudBlobClient();
+                //var container2 = blobServiceClient2.GetContainerReference(blobContainerName2);
+                //await container2.CreateIfNotExistsAsync();
+                //var blob2 = container2.GetBlockBlobReference(blobName2);
+                //await blob2.UploadFromStreamAsync(imagen.OpenReadStream());
+                string imageBase64 = ImageConversion.ConvertToBase64(imagen, 10);
+                urlsCarruselImagenes.Add(imageBase64);
             }
 
             // Save data to database
@@ -181,7 +179,7 @@ namespace Totem_API.Controllers
                 Descripcion = inputModel.Descripcion,
                 Keywords = string.Join(",", inputModel.Keywords),
                 UrlCarruselImagenes = string.Join("|", urlsCarruselImagenes), // Merge URLs of carousel images into a single string with '|' delimiter
-                UrlMapa = blob.Uri.ToString(),
+                UrlMapa = urlMapa,
                 IdTotem = inputModel.IdTotem
             };
 
@@ -208,26 +206,26 @@ namespace Totem_API.Controllers
             }
 
             // Eliminar las imágenes del carrusel de Azure Blob Storage
-            var connectionString = _configuration.GetConnectionString("AzureBlobStorage");
-            var containerName = "contenedortotem";
-            var blobServiceClient = CloudStorageAccount.Parse(connectionString).CreateCloudBlobClient();
-            var containerClient = blobServiceClient.GetContainerReference(containerName);
+            //var connectionString = _configuration.GetConnectionString("AzureBlobStorage");
+            //var containerName = "contenedortotem";
+            //var blobServiceClient = CloudStorageAccount.Parse(connectionString).CreateCloudBlobClient();
+            //var containerClient = blobServiceClient.GetContainerReference(containerName);
 
-            var urlsCarruselImagenes = locacion.UrlCarruselImagenes.Split('|');
-            foreach (var urlImagen in urlsCarruselImagenes)
-            {
-                var blobName = Path.GetFileName(urlImagen);
-                var blobClient = containerClient.GetBlockBlobReference(blobName);
-                await blobClient.DeleteIfExistsAsync();
-            }
+            //var urlsCarruselImagenes = locacion.UrlCarruselImagenes.Split('|');
+            //foreach (var urlImagen in urlsCarruselImagenes)
+            //{
+            //    var blobName = Path.GetFileName(urlImagen);
+            //    var blobClient = containerClient.GetBlockBlobReference(blobName);
+            //    await blobClient.DeleteIfExistsAsync();
+            //}
 
-            // Eliminar la imagen principal de Azure Blob Storage
-            if (!string.IsNullOrEmpty(locacion.UrlMapa))
-            {
-                var blobName = Path.GetFileName(locacion.UrlMapa);
-                var blobClient = containerClient.GetBlockBlobReference(blobName);
-                await blobClient.DeleteIfExistsAsync();
-            }
+            //// Eliminar la imagen principal de Azure Blob Storage
+            //if (!string.IsNullOrEmpty(locacion.UrlMapa))
+            //{
+            //    var blobName = Path.GetFileName(locacion.UrlMapa);
+            //    var blobClient = containerClient.GetBlockBlobReference(blobName);
+            //    await blobClient.DeleteIfExistsAsync();
+            //}
 
             _context.Locacions.Remove(locacion);
             await _context.SaveChangesAsync();
