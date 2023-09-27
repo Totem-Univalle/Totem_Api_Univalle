@@ -61,7 +61,6 @@ namespace Totem_API.Controllers
         public async Task<IActionResult> PutTotem(int id, [FromForm] TotemUploadModel totemInput)
         {
             var totems = await _context.Totems.FindAsync(id);
-
             if (totems == null)
             {
                 return NotFound();
@@ -73,27 +72,33 @@ namespace Totem_API.Controllers
             totems.IdUsuario = totemInput.IdUsuario;
 
             // Handle the image upload
+            var oldUrl = totems.UrlLogo;
             var formFile = totemInput.Imagen;
 
             if (formFile != null && formFile.Length > 0)
             {
-                // Convierte la imagen a un array de bytes
-                using (var ms = new MemoryStream())
-                {
-                    await formFile.CopyToAsync(ms);
-                    var fileBytes = ms.ToArray();
+                //// Convierte la imagen a un array de bytes
+                //using (var ms = new MemoryStream())
+                //{
+                //    await formFile.CopyToAsync(ms);
+                //    var fileBytes = ms.ToArray();
 
-                    // Sube la imagen al Blob Storage
-                    var connectionString = _configuration.GetConnectionString("AzureBlobStorage");
-                    var containerName = "contenedortotem";
-                    var fileName = Guid.NewGuid().ToString() + Path.GetExtension(formFile.FileName);
+                //    // Sube la imagen al Blob Storage
+                //    var connectionString = _configuration.GetConnectionString("AzureBlobStorage");
+                //    var containerName = "contenedortotem";
+                //    var fileName = Guid.NewGuid().ToString() + Path.GetExtension(formFile.FileName);
 
-                    var blobClient = new BlobClient(connectionString, containerName, fileName);
-                    await blobClient.UploadAsync(new MemoryStream(fileBytes), true);
+                //    var blobClient = new BlobClient(connectionString, containerName, fileName);
+                //    await blobClient.UploadAsync(new MemoryStream(fileBytes), true);
 
-                    // Actualiza la URL de la imagen en la base de datos
-                    totems.UrlLogo = blobClient.Uri.ToString();
-                }
+                //    // Actualiza la URL de la imagen en la base de datos
+                //    totems.UrlLogo = blobClient.Uri.ToString();
+                //}
+                totems.UrlLogo = ImageConversion.ConvertToBase64(formFile,10);
+            }
+            if (formFile == null)
+            {
+                totems.UrlLogo = oldUrl;
             }
 
             try
@@ -155,21 +160,21 @@ namespace Totem_API.Controllers
                 return BadRequest("Invalid request");
             }
 
-            var connectionString = _configuration.GetConnectionString("AzureBlobStorage");
+            //var connectionString = _configuration.GetConnectionString("AzureBlobStorage");
 
-            if (connectionString == null)
-            {
-                return StatusCode(StatusCodes.Status500InternalServerError, "AzureBlobStorage connection string is missing");
-            }
+            //if (connectionString == null)
+            //{
+            //    return StatusCode(StatusCodes.Status500InternalServerError, "AzureBlobStorage connection string is missing");
+            //}
 
             // Upload image to Blob Storage
-            var blobName = Guid.NewGuid().ToString() + Path.GetExtension(inputModel.Imagen.FileName);
-            var blobContainerName = "contenedortotem";
-            var blobServiceClient = CloudStorageAccount.Parse(connectionString).CreateCloudBlobClient();
-            var container = blobServiceClient.GetContainerReference(blobContainerName);
-            await container.CreateIfNotExistsAsync();
-            var blob = container.GetBlockBlobReference(blobName);
-            await blob.UploadFromStreamAsync(inputModel.Imagen.OpenReadStream());
+            //var blobName = Guid.NewGuid().ToString() + Path.GetExtension(inputModel.Imagen.FileName);
+            //var blobContainerName = "contenedortotem";
+            //var blobServiceClient = CloudStorageAccount.Parse(connectionString).CreateCloudBlobClient();
+            //var container = blobServiceClient.GetContainerReference(blobContainerName);
+            //await container.CreateIfNotExistsAsync();
+            //var blob = container.GetBlockBlobReference(blobName);
+            //await blob.UploadFromStreamAsync(inputModel.Imagen.OpenReadStream());
 
             var usuario = await _context.Usuarios.FindAsync(inputModel.IdUsuario);
             if (usuario == null)
@@ -182,7 +187,7 @@ namespace Totem_API.Controllers
             {
 
                 Nombre = inputModel.Nombre,
-                UrlLogo = blob.Uri.ToString(),
+                UrlLogo = ImageConversion.ConvertToBase64(inputModel.Imagen,10),
                 NumeroPlantilla = inputModel.NumeroPlantilla,
                 IdUsuario = inputModel.IdUsuario,
             };
@@ -212,17 +217,17 @@ namespace Totem_API.Controllers
             }
 
             // Eliminar las imágenes del carrusel de Azure Blob Storage
-            var connectionString = _configuration.GetConnectionString("AzureBlobStorage");
-            var containerName = "contenedortotem";
-            var blobServiceClient = CloudStorageAccount.Parse(connectionString).CreateCloudBlobClient();
-            var containerClient = blobServiceClient.GetContainerReference(containerName);
+            //var connectionString = _configuration.GetConnectionString("AzureBlobStorage");
+            //var containerName = "contenedortotem";
+            //var blobServiceClient = CloudStorageAccount.Parse(connectionString).CreateCloudBlobClient();
+            //var containerClient = blobServiceClient.GetContainerReference(containerName);
 
-            if (!string.IsNullOrEmpty(totems.UrlLogo))
-            {
-                var blobName = Path.GetFileName(totems.UrlLogo);
-                var blobClient = containerClient.GetBlockBlobReference(blobName);
-                await blobClient.DeleteIfExistsAsync();
-            }
+            //if (!string.IsNullOrEmpty(totems.UrlLogo))
+            //{
+            //    var blobName = Path.GetFileName(totems.UrlLogo);
+            //    var blobClient = containerClient.GetBlockBlobReference(blobName);
+            //    await blobClient.DeleteIfExistsAsync();
+            //}
 
 
             _context.Totems.Remove(totems);

@@ -4,7 +4,7 @@
     {
         public string Nombre { get; set; } = null;
 
-        public IFormFile Imagen { get; set; }
+        public IFormFile? Imagen { get; set; }
 
         public short NumeroPlantilla { get; set; }
 
