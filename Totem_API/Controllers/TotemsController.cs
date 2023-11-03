@@ -69,7 +69,6 @@ namespace Totem_API.Controllers
             // Actualizar los campos del totems con los datos del modelo
             totems.Nombre = totemInput.Nombre;
             totems.NumeroPlantilla = totemInput.NumeroPlantilla;
-            totems.IdUsuario = totemInput.IdUsuario;
 
             // Handle the image upload
             var oldUrl = totems.UrlLogo;
@@ -189,7 +188,7 @@ namespace Totem_API.Controllers
                 Nombre = inputModel.Nombre,
                 UrlLogo = ImageConversion.ConvertToBase64(inputModel.Imagen,10),
                 NumeroPlantilla = inputModel.NumeroPlantilla,
-                IdUsuario = inputModel.IdUsuario,
+                IdUsuario = (int)inputModel.IdUsuario,
             };
 
             if (_context.Totems == null)

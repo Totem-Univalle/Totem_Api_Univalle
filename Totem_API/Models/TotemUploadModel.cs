@@ -8,6 +8,6 @@
 
         public short NumeroPlantilla { get; set; }
 
-        public int IdUsuario { get; set; }
+        public int? IdUsuario { get; set; }
     }
 }

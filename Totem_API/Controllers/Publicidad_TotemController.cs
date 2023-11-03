@@ -18,23 +18,23 @@ namespace Totem_API.Controllers
 
 
 
-        //[Route("api/PublicidadT/{id}")]
-        //[HttpGet("{id}")]
-        //public async Task<ActionResult<IEnumerable<Publicidad>>> GetPublicidadId(int id)
-        //{
+        [Route("api/PublicidadT/{id}")]
+        [HttpGet("{id}")]
+        public async Task<ActionResult<IEnumerable<Publicidad>>> GetPublicidadId(int id)
+        {
 
-        //    if (_context.Publicidads == null)
-        //    {
-        //        return NotFound();
-        //    }
+            if (_context.Publicidads == null)
+            {
+                return NotFound();
+            }
 
-        //    var publicidad = await _context.Publicidads.Where(t => t.IdTotem == id).ToListAsync();
+            var publicidad = await _context.Publicidads.Where(t => t.IdTotem == id).ToListAsync();
 
-        //    if (publicidad == null)
-        //    {
-        //        return NotFound();
-        //    }
-        //    return publicidad;
-        //}
+            if (publicidad == null)
+            {
+                return NotFound();
+            }
+            return publicidad;
+        }
     }
 }
