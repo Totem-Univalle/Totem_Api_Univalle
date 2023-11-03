@@ -9,9 +9,12 @@ public partial class Usuario
 
     public string Email { get; set; } = null!;
 
+    public string Password { get; set; } = null!;
+
     public byte Rol { get; set; }
 
     public string Nombre { get; set; } = null!;
+    public string Institucion { get; set; } = null!;
 
     public string Apellido { get; set; } = null!;
 
