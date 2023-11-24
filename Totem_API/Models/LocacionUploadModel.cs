@@ -8,9 +8,9 @@
 
         public List<string> Keywords { get; set; } = new List<string>();
 
-        public List<IFormFile> ImagenesCarrucel { get; set; } = null!;
+        public List<IFormFile>? ImagenesCarrucel { get; set; } = null!;
 
-        public IFormFile ImagenMapa { get; set; } = null!;
+        public IFormFile? ImagenMapa { get; set; } = null!;
 
         public int IdTotem { get; set; }
     }
