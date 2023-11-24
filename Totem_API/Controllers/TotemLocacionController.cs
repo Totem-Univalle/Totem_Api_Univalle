@@ -25,12 +25,12 @@ namespace Totem_API.Controllers
             }
 
             var locaciones = await _context.Locacions.Where(u => u.IdTotem == id).ToListAsync();
-            string[] ArrayCheck = keys.Split(',');
+            string[] ArrayCheck = keys.ToLower().Split(',');
             int[] coincidence = new int[locaciones.Count];
             int index = 0;
             foreach (var item in locaciones)
             {
-                string[] arrayKeysL = item.Keywords.Split(',');
+                string[] arrayKeysL = item.Keywords.ToLower().Split(',');
 
                 for (int i = 0; i < arrayKeysL.Length; i++)
                 {
